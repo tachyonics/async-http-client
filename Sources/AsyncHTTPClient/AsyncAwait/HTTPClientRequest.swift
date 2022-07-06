@@ -170,4 +170,28 @@ extension HTTPClientRequest.Body {
     }
 }
 
+@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+extension HTTPClientRequest.Body {
+    /// size of the request body if it is fixed and known before starting the request
+    /// will return `nil` otherwise
+    public var knownLength: Int? {
+        let storage: RequestBodyLength
+        switch self.mode {
+        case .asyncSequence(length: let length, _):
+            storage = length
+        case .sequence(length: let length, _, _):
+            storage = length
+        case .byteBuffer(let buffer):
+            return buffer.readableBytes
+        }
+        
+        switch storage {
+        case .unknown:
+            return nil
+        case .known(let length):
+            return length
+        }
+    }
+}
+
 #endif
